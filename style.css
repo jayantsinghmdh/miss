@@ -1,0 +1,22 @@
+div {
+    height: 200px;
+    width: 500px;
+    background-color: pink;
+    border-width: 5px;
+    border-style: solid;
+    border-color: chartreuse;
+    border-top: 5px solid blueviolet;
+    border-radius: 30px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+h1 {
+    background-color: aqua;
+    /* border-width: 2px;
+    border-style: dashed;
+    border-color: darkgoldenrod; */
+    border: 2px dashed darkgoldenrod;
+
+}
+

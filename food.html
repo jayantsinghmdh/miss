@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Online Food Ordering System - Frontend Demo</title>
+<style>
+  body { font-family: Arial, sans-serif; margin:0; background:#f9f9f9; }
+  header { background:#007bff; color:#fff; padding:10px 20px; display:flex; justify-content:space-between; align-items:center; }
+  header h1 { margin:0; font-size:24px; cursor:pointer; }
+  nav button { background:none; border:none; color:#fff; margin-left:15px; font-size:16px; cursor:pointer; }
+  nav button:hover { text-decoration:underline; }
+  main { padding:20px; max-width:1000px; margin:0 auto; }
+  .hidden { display:none; }
+  input, select, textarea, button { font-size:16px; padding:8px; margin:5px 0; width:100%; box-sizing:border-box; }
+  button { cursor:pointer; background:#007bff; color:#fff; border:none; border-radius:4px; }
+  button:hover { background:#0056b3; }
+  .form-group { margin-bottom:15px; }
+  .restaurant-list, .menu-list, .cart-list, .orders-list, .reviews-list, .admin-list { list-style:none; padding:0; }
+  .restaurant-list li, .menu-list li, .cart-list li, .orders-list li, .reviews-list li, .admin-list li { background:#fff; margin-bottom:10px; padding:10px; border-radius:4px; box-shadow:0 0 5px rgba(0,0,0,0.1); }
+  .flex { display:flex; gap:10px; align-items:center; }
+  .flex-between { display:flex; justify-content:space-between; align-items:center; }
+  .rating-stars { color: gold; }
+  .small-btn { padding:5px 10px; font-size:14px; }
+  textarea { resize: vertical; }
+  .error { color:red; margin-bottom:10px; }
+  .success { color:green; margin-bottom:10px; }
+  footer { text-align:center; padding:10px; color:#666; font-size:14px; margin-top:40px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1 id="logo">FoodOrderApp</h1>
+  <nav>
+    <button id="nav-home">Home</button>
+    <button id="nav-restaurants">Restaurants</button>
+    <button id="nav-cart">Cart (<span id="cart-count">0</span>)</button>
+    <button id="nav-orders">My Orders</button>
+    <button id="nav-admin">Admin Panel</button>
+    <button id="nav-login">Login/Register</button>
+    <button id="nav-logout" class="hidden">Logout</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- Messages -->
+  <div id="message" class="error"></div>
+
+  <!-- Home -->
+  <section id="section-home">
+    <h2>Welcome to FoodOrderApp</h2>
+    <p>Order your favorite food from nearby restaurants easily.</p>
+  </section>
+
+  <!-- Login/Register -->
+  <section id="section-login" class="hidden">
+    <h2 id="login-title">Login</h2>
+    <div id="login-message" class="error"></div>
+    <form id="login-form">
+      <div class="form-group">
+        <input type="email" id="login-email" placeholder="Email" required />
+      </div>
+      <div class="form-group">
+        <input type="password" id="login-password" placeholder="Password" required />
+      </div>
+      <button type="submit" id="login-submit">Login</button>
+    </form>
+    <p>Don't have an account? <button id="show-register" style="background:none; border:none; color:#007bff; cursor:pointer; padding:0;">Register here</button></p>
+  </section>
+
+  <section id="section-register" class="hidden">
+    <h2>Register</h2>
+    <div id="register-message" class="error"></div>
+    <form id="register-form">
+      <div class="form-group">
+        <input type="text" id="register-name" placeholder="Full Name" required />
+      </div>
+      <div class="form-group">
+        <input type="email" id="register-email" placeholder="Email" required />
+      </div>
+      <div class="form-group">
+        <input type="password" id="register-password" placeholder="Password" required />
+      </div>
+      <button type="submit">Register</button>
+    </form>
+    <p>Already have an account? <button id="show-login" style="background:none; border:none; color:#007bff; cursor:pointer; padding:0;">Login here</button></p>
+  </section>
+
+  <!-- Restaurant Listing -->
+  <section id="section-restaurants" class="hidden">
+    <h2>Nearby Restaurants</h2>
+    <ul id="restaurant-list" class="restaurant-list"></ul>
+  </section>
+
+  <!-- Menu Display -->
+  <section id="section-menu" class="hidden">
+    <button id="back-to-restaurants" class="small-btn" style="width:auto; margin-bottom:10px;">← Back to Restaurants</button>
+    <h2 id="menu-restaurant-name"></h2>
+    <ul id="menu-list" class="menu-list"></ul>
+  </section>
+
+  <!-- Cart -->
+  <section id="section-cart" class="hidden">
+    <h2>Your Cart</h2>
+    <ul id="cart-list" class="cart-list"></ul>
+    <p id="cart-total"></p>
+    <button id="checkout-btn" class="small-btn" style="width:auto;">Checkout</button>
+  </section>
+
+  <!-- Payment -->
+  <section id="section-payment" class="hidden">
+    <h2>Payment</h2>
+    <form id="payment-form">
+      <div class="form-group">
+        <input type="text" id="payment-name" placeholder="Card Holder Name" required />
+      </div>
+      <div class="form-group">
+        <input type="text" id="payment-card" placeholder="Card Number" required pattern="\d{16}" title="16 digit card number" />
+      </div>
+      <div class="form-group">
+        <input type="text" id="payment-expiry" placeholder="Expiry MM/YY" required pattern="(0[1-9]|1[0-2])\/\d{2}" title="MM/YY format" />
+      </div>
+      <div class="form-group">
+        <input type="text" id="payment-cvv" placeholder="CVV" required pattern="\d{3}" title="3 digit CVV" />
+      </div>
+      <button type="submit">Pay Now</button>
+    </form>
+  </section>
+
+  <!-- Orders -->
+  <section id="section-orders" class="hidden">
+    <h2>My Orders</h2>
+    <ul id="orders-list" class="orders-list"></ul>
+  </section>
+
+  <!-- Admin Panel -->
+  <section id="section-admin" class="hidden">
+    <h2>Admin Panel</h2>
+    <h3>Add Restaurant</h3>
+    <form id="add-restaurant-form">
+      <input type="text" id="admin-restaurant-name" placeholder="Restaurant Name" required />
+      <button type="submit">Add Restaurant</button>
+    </form>
+    <h3>Restaurants</h3>
+    <ul id="admin-restaurant-list" class="admin-list"></ul>
+  </section>
+
+  <!-- Reviews -->
+  <section id="section-reviews" class="hidden">
+    <h2>Reviews for <span id="reviews-restaurant-name"></span></h2>
+    <ul id="reviews-list" class="reviews-list"></ul>
+    <h3>Add Review</h3>
+    <form id="add-review-form">
+      <label>Rating:
+        <select id="review-rating" required>
+          <option value="">Select</option>
+          <option value="5">★★★★★</option>
+          <option value="4">★★★★☆</option>
+          <option value="3">★★★☆☆</option>
+          <option value="2">★★☆☆☆</option>
+          <option value="1">★☆☆☆☆</option>
+        </select>
+      </label>
+      <textarea id="review-text" rows="3" placeholder="Write your review..." required></textarea>
+      <button type="submit">Submit Review</button>
+    </form>
+    <button id="back-to-menu" class="small-btn" style="margin-top:10px;">← Back to Menu</button>
+  </section>
+
+</main>
+
+<footer>
+  &copy; 2024 FoodOrderApp
+</footer>
+
+<script>
+  // Data storage keys
+  const USERS_KEY = 'foodapp_users';
+  const RESTAURANTS_KEY = 'foodapp_restaurants';
+  const ORDERS_KEY = 'foodapp_orders';
+  const REVIEWS_KEY = 'foodapp_reviews';
+
+  // Current session data
+  let currentUser  = null;
+  let currentRestaurant = null;
+  let cart = [];
+
+  // Elements
+  const sections = {
+    home: document.getElementById('section-home'),
+    login: document.getElementById('section-login'),
+    register: document.getElementById('section-register'),
+    restaurants: document.getElementById('section-restaurants'),
+    menu: document.getElementById('section-menu'),
+    cart: document.getElementById('section-cart'),
+    payment: document.getElementById('section-payment'),
+    orders: document.getElementById('section-orders'),
+    admin: document.getElementById('section-admin'),
+    reviews: document.getElementById('section-reviews'),
+  };
+
+  const navLogin = document.getElementById('nav-login');
+  const navLogout = document.getElementById('nav-logout');
+  const navCartCount = document.getElementById('cart-count');
+
+  // Utility functions
+  function saveToStorage(key, data) {
+    localStorage.setItem(key, JSON.stringify(data));
+  }
+  function loadFromStorage(key) {
+    return JSON.parse(localStorage.getItem(key)) || [];
+  }
+  function loadUsers() {
+    return JSON.parse(localStorage.getItem(USERS_KEY)) || {};
+  }
+  function saveUsers(users) {
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+  }
+  function showSection(name) {
+    Object.values(sections).forEach(s => s.classList.add('hidden'));
+    sections[name].classList.remove('hidden');
+    clearMessages();
+  }
+  function clearMessages() {
+    document.getElementById('message').textContent = '';
+    document.getElementById('login-message').textContent = '';
+    document.getElementById('register-message').textContent = '';
+  }
+  function updateCartCount() {
+    navCartCount.textContent = cart.length;
+  }
+  function isLoggedIn() {
+    return currentUser  !== null;
+  }
+  function requireLogin(callback) {
+    if (!isLoggedIn()) {
+      alert('Please login first!');
+      showSection('login');
+      return false;
+    }
+    return callback();
+  }
+
+  // Authentication
+  function login(email, password) {
+    const users = loadUsers();
+    if (users[email] && users[email].password === password) {
+      currentUser  = { email, name: users[email].name };
+      localStorage.setItem('foodapp_currentUser ', JSON.stringify(currentUser ));
+      updateUIForLogin();
+      showSection('home');
+      return true;
+    }
+    return false;
+  }
+  function register(name, email, password) {
+    const users = loadUsers();
+    if (users[email]) return false;
+    users[email] = { name, password };
+    saveUsers(users);
+    return true;
+  }
+  function logout() {
+    currentUser  = null;
+    localStorage.removeItem('foodapp_currentUser ');
+    cart = [];
+    updateCartCount();
+    updateUIForLogout();
+    showSection('home');
+  }
+  function updateUIForLogin() {
+    navLogin.classList.add('hidden');
+    navLogout.classList.remove('hidden');
+  }
+  function updateUIForLogout() {
+    navLogin.classList.remove('hidden');
+    navLogout.classList.add('hidden');
+  }
+
+  // Restaurants
+  function loadRestaurants() {
+    const restaurants = loadFromStorage(RESTAURANTS_KEY);
+    const list = document.getElementById('restaurant-list');
+    list.innerHTML = '';
+    if (restaurants.length === 0) {
+      list.innerHTML = '<li>No restaurants available.</li>';
+      return;
+    }
+    restaurants.forEach((r, i) => {
+      const li = document.createElement('li');
+      li.innerHTML = `<strong>${r.name}</strong> <button class="small-btn" data-index="${i}">View Menu</button>`;
+      list.appendChild(li);
+    });
+    // Add event listeners for view menu buttons
+    list.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = btn.getAttribute('data-index');
+        currentRestaurant = loadFromStorage(RESTAURANTS_KEY)[idx];
+        showMenu(currentRestaurant);
+      });
+    });
+  }
+
+  // Menu (for demo, each restaurant has fixed menu)
+  const demoMenus = {
+    'Pizza Place': [
+      { id: 1, name: 'Margherita Pizza', price: 250 },
+      { id: 2, name: 'Pepperoni Pizza', price: 300 },
+      { id: 3, name: 'Veggie Pizza', price: 280 },
+    ],
+    'Burger Joint': [
+      { id: 1, name: 'Classic Burger', price: 150 },
+      { id: 2, name: 'Cheese Burger', price: 180 },
+      { id: 3, name: 'Veggie Burger', price: 140 },
+    ],
+    'Sushi Bar': [
+      { id: 1, name: 'California Roll', price: 350 },
+      { id: 2, name: 'Salmon Nigiri', price: 400 },
+      { id: 3, name: 'Tuna Roll', price: 370 },
+    ],
+  };
+
+  function showMenu(restaurant) {
+    showSection('menu');
+    document.getElementById('menu-restaurant-name').textContent = restaurant.name;
+    const menuList = document.getElementById('menu-list');
+    menuList.innerHTML = '';
+    const menu = demoMenus[restaurant.name] || [];
+    if (menu.length === 0) {
+      menuList.innerHTML = '<li>No menu available.</li>';
+      return;
+    }
+    menu.forEach(item => {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <div class="flex-between">
+          <div><strong>${item.name}</strong> - ₹${item.price}</div>
+          <button class="small-btn" data-id="${item.id}">Add to Cart</button>
+        </div>
+      `;
+      menuList.appendChild(li);
+    });
+    // Add event listeners for add to cart
+    menuList.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        requireLogin(() => {
+          const id = parseInt(btn.getAttribute('data-id'));
+          const item = menu.find(m => m.id === id);
+          if (item) {
+            cart.push({ ...item, restaurant: restaurant.name });
+            updateCartCount();
+            alert(`${item.name} added to cart.`);
+          }
+        });
+      });
+    });
+  }
+
+  // Cart
+  function showCart() {
+    showSection('cart');
+    const cartList = document.getElementById('cart-list');
+    cartList.innerHTML = '';
+    if (cart.length === 0) {
+      cartList.innerHTML = '<li>Your cart is empty.</li>';
+      document.getElementById('cart-total').textContent = '';
+      return;
+    }
+    cart.forEach((item, idx) => {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <div class="flex-between">
+          <div>${item.name} (₹${item.price}) - ${item.restaurant}</div>
+          <button class="small-btn" data-idx="${idx}">Remove</button>
+        </div>
+      `;
+      cartList.appendChild(li);
+    });
+    const total = cart.reduce((sum, i) => sum + i.price, 0);
+    document.getElementById('cart-total').textContent = `Total: ₹${total}`;
+    // Remove buttons
+    cartList.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.getAttribute('data-idx'));
+        cart.splice(idx, 1);
+        updateCartCount();
+        showCart();
+      });
+    });
+  }
+
+  // Payment
+  function showPayment() {
+    if (cart.length === 0) {
+      alert('Cart is empty!');
+      return;
+    }
+    showSection('payment');
+  }
+
+  function processPayment(e) {
+    e.preventDefault();
+    // For demo, just accept payment and create order
+    const orders = loadFromStorage(ORDERS_KEY);
+    const newOrder = {
+      id: Date.now(),
+      user: currentUser .email,
+      items: [...cart],
+      status: 'Placed',
+      date: new Date().toISOString(),
+    };
+    orders.push(newOrder);
+    saveToStorage(ORDERS_KEY, orders);
+    cart = [];
+    updateCartCount();
+    alert('Payment successful! Order placed.');
+    showOrders();
+  }
+
+  // Orders
+  function showOrders() {
+    showSection('orders');
+    const orders = loadFromStorage(ORDERS_KEY).filter(o => o.user === currentUser .email);
+    const ordersList = document.getElementById('orders-list');
+    ordersList.innerHTML = '';
+    if (orders.length === 0) {
+      ordersList.innerHTML = '<li>No orders placed yet.</li>';
+      return;
+    }
+    orders.forEach(order => {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <div><strong>Order ID:</strong
